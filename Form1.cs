@@ -30,7 +30,7 @@ public partial class Form1 : Form
             lblStatus.ForeColor = Color.FromArgb(0, 120, 215);
             
             // Kiểm tra model có tồn tại không
-            string modelPath = "ggml-small-q5_1.bin";
+            string modelPath = "ggml-tiny-q5_1.bin";
             if (!File.Exists(modelPath))
             {
                 lblStatus.Text = "❌ Không tìm thấy model Whisper!";
