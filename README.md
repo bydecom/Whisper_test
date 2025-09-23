@@ -82,6 +82,13 @@ dotnet run
 
 ## ⚙️ Cấu hình
 
+### Cấu hình API key qua file .env
+Tạo file `.env` ở thư mục gốc dự án (cùng cấp `WhisperSTTUI.sln`) với nội dung:
+```
+GEMINI_API_KEY=YOUR_API_KEY
+```
+Ứng dụng sẽ tự động nạp `.env` khi khởi động. Nếu không có `.env`, bạn cũng có thể đặt biến môi trường hệ thống `GEMINI_API_KEY`.
+
 ### Thay đổi ngôn ngữ
 Trong file `Form1.cs`, dòng 28:
 ```csharp

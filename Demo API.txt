@@ -1,0 +1,138 @@
+using System;
+using System.IO;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+
+namespace GeminiStreamExample
+{
+    public class GeminiStreamer
+    {
+        private readonly HttpClient _httpClient;
+        private readonly string _apiKey;
+        private const string ModelId = "gemini-2.5-flash";
+        private const string Endpoint = "streamGenerateContent";
+
+        public GeminiStreamer(string apiKey)
+        {
+            _apiKey = apiKey;
+            _httpClient = new HttpClient
+            {
+                BaseAddress = new Uri("https://generativelanguage.googleapis.com/v1beta/models/")
+            };
+        }
+
+        public async Task StreamEntitiesAsync(string userInput)
+        {
+            var requestObj = new
+            {
+                systemInstruction = new[]
+                {
+                    new
+                    {
+                        text = @"Bạn là 1 chuyên gia phân tích ngôn ngữ tiếng Việt, hiện tại bạn cần phân tích số tiền các phần mà tôi đã dùng thông qua đoạn text đã được tôi xử lý từ Speech to text. Có 1 số lưu ý sau:
+1. ngôn ngữ có thể bị chuyển đổi sai 1 chút
+Ví dụ:
+Gửi, Rữ, Gử là Rưỡi (50)
+Một số keyword có thể là:
+Bách Hóa Xanh
+Siêu Thị
+Xem Phim
+Đá Banh
+Cà Phê"
+                    }
+                },
+                contents = new[]
+                {
+                    new
+                    {
+                        role = "user",
+                        parts = new[]
+                        {
+                            new { text = userInput }
+                        }
+                    }
+                },
+                generationConfig = new
+                {
+                    thinkingConfig = new { thinkingBudget = 0 },
+                    responseMimeType = "application/json",
+                    responseSchema = new
+                    {
+                        type = "object",
+                        properties = new
+                        {
+                            Entities = new
+                            {
+                                type = "array",
+                                items = new
+                                {
+                                    type = "object",
+                                    properties = new
+                                    {
+                                        Category = new
+                                        {
+                                            type = "string",
+                                            @enum = new[] { "Ăn uống", "Giải trí", "Chi phí khác", "Tiết kiệm" }
+                                        },
+                                        Value = new
+                                        {
+                                            type = "number",
+                                            description = "Số tiền chi tiêu ứng với category tính theo VND, ví dụ: 10000"
+                                        },
+                                        Payfor = new
+                                        {
+                                            type = "string",
+                                            description = "Hành động mà người đó chi tiêu ví dụ: Đi chợ, mua đồ, xem phim, đá bóng,.."
+                                        }
+                                    },
+                                    required = new[] { "Category", "Value", "Payfor" },
+                                    propertyOrdering = new[] { "Category", "Value", "Payfor" }
+                                }
+                            }
+                        },
+                        required = new[] { "Entities" },
+                        propertyOrdering = new[] { "Entities" }
+                    }
+                }
+            };
+
+            var json = JsonSerializer.Serialize(requestObj);
+            using var content = new StringContent(json, Encoding.UTF8, "application/json");
+            using var request = new HttpRequestMessage(HttpMethod.Post, $"{ModelId}:{Endpoint}?key={_apiKey}")
+            {
+                Content = content
+            };
+
+            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
+
+            using var stream = await response.Content.ReadAsStreamAsync();
+            using var reader = new StreamReader(stream, Encoding.UTF8);
+            string? line;
+            while ((line = await reader.ReadLineAsync()) != null)
+            {
+                // Mỗi line là một delta JSON của stream
+                Console.WriteLine(line);
+            }
+        }
+    }
+
+    class Program
+    {
+        static async Task Main()
+        {
+            Console.Write("Nhập đoạn text (đã chuyển từ speech-to-text): ");
+            var input = Console.ReadLine() ?? "";
+
+            var apiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY") 
+                         ?? throw new Exception("Thiếu biến môi trường GEMINI_API_KEY");
+
+            var streamer = new GeminiStreamer(apiKey);
+
+            Console.WriteLine("\n=== Kết quả streaming ===\n");
+            await streamer.StreamEntitiesAsync(input);
+        }
+    }
+}

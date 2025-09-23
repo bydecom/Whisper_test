@@ -25,6 +25,7 @@ partial class Form1
         this.progressBar = new ProgressBar();
         this.lblStatus = new Label();
         this.btnClear = new Button();
+		this.btnAnalyzeGemini = new Button();
         this.pnlDropZone.SuspendLayout();
         this.SuspendLayout();
         
@@ -107,6 +108,21 @@ partial class Form1
         this.btnClear.Text = "🗑️ Xóa";
         this.btnClear.UseVisualStyleBackColor = false;
         this.btnClear.Click += new EventHandler(this.btnClear_Click);
+		
+		// 
+		// btnAnalyzeGemini
+		// 
+		this.btnAnalyzeGemini.BackColor = Color.FromArgb(0, 150, 0);
+		this.btnAnalyzeGemini.FlatStyle = FlatStyle.Flat;
+		this.btnAnalyzeGemini.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+		this.btnAnalyzeGemini.ForeColor = Color.White;
+		this.btnAnalyzeGemini.Location = new Point(310, 280);
+		this.btnAnalyzeGemini.Name = "btnAnalyzeGemini";
+		this.btnAnalyzeGemini.Size = new Size(200, 40);
+		this.btnAnalyzeGemini.TabIndex = 8;
+		this.btnAnalyzeGemini.Text = "📊 Phân tích (Gemini)";
+		this.btnAnalyzeGemini.UseVisualStyleBackColor = false;
+		this.btnAnalyzeGemini.Click += new EventHandler(this.btnAnalyzeGemini_Click);
         
         // 
         // progressBar
@@ -148,6 +164,7 @@ partial class Form1
         this.AutoScaleMode = AutoScaleMode.Font;
         this.BackColor = Color.White;
         this.ClientSize = new Size(800, 620);
+		this.Controls.Add(this.btnAnalyzeGemini);
         this.Controls.Add(this.txtResult);
         this.Controls.Add(this.lblStatus);
         this.Controls.Add(this.progressBar);
@@ -178,4 +195,5 @@ partial class Form1
     private ProgressBar progressBar;
     private Label lblStatus;
     private TextBox txtResult;
+	private Button btnAnalyzeGemini;
 }
